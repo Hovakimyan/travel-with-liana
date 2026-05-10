@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * Cross-page client island. Wires up:
@@ -8,11 +9,22 @@ import { useEffect } from "react";
  *  2. Scroll-triggered reveal animations on [data-reveal] elements
  *     (any page can opt in). Honors prefers-reduced-motion.
  *
- * The fixed-topbar scroll-shadow lives in SiteHeader.tsx — that component
- * already needs to be a client component for the mobile menu state, so
- * the scroll listener is colocated there for cohesion.
+ * Re-runs on every pathname change because client-side navigation
+ * with App Router does NOT unmount the layout — without this the
+ * IntersectionObserver would still be watching elements from the
+ * previous page (now removed from the DOM), and new sections would
+ * stay at their initial opacity-0 + translate state forever, making
+ * pages appear broken on soft nav even though they render fine on
+ * hard refresh.
+ *
+ * The fixed-topbar scroll-shadow lives in SiteHeader.tsx — that
+ * component is a client component anyway (for the mobile menu and
+ * usePathname-driven active state), and its scroll listener
+ * re-evaluates on path change for the same reason.
  */
 export default function Interactivity() {
+  const pathname = usePathname();
+
   useEffect(() => {
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -88,6 +100,11 @@ export default function Interactivity() {
     const reveals = Array.from(
       document.querySelectorAll<HTMLElement>("[data-reveal]"),
     );
+
+    // Reset any prior is-revealed flags so re-mounts (after client-side
+    // navigation) re-evaluate fresh based on the new page's viewport.
+    reveals.forEach((el) => el.classList.remove("is-revealed"));
+
     if (reveals.length > 0) {
       if (reduceMotion) {
         // Show everything immediately when reduced-motion is requested.
@@ -115,7 +132,7 @@ export default function Interactivity() {
     return () => {
       cleanups.forEach((c) => c());
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }
