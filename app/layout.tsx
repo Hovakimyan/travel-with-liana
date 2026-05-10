@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Montserrat, Caveat } from "next/font/google";
+import SiteHeader from "@/app/components/SiteHeader";
+import SiteFooter from "@/app/components/SiteFooter";
+import Interactivity from "@/app/components/Interactivity";
 import "./globals.css";
 
 // Brand-locked typography. Playfair Display anchors the editorial gravity
@@ -29,14 +32,16 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Travel with Liana — Real travel, hidden gems, beautiful places",
+  title: {
+    default: "Travel with Liana — Real travel, hidden gems, beautiful places",
+    template: "%s · Travel with Liana",
+  },
   description:
     "LA-based Armenian travel creator. Hidden gems, weekend trips, and real experiences — California through an Armenian lens. Brand collaborations welcome.",
   metadataBase: new URL("https://travelwithliana.com"),
   openGraph: {
     title: "Travel with Liana",
-    description:
-      "Real places. Meaningful moments. Timeless memories.",
+    description: "Real places. Meaningful moments. Timeless memories.",
     type: "profile",
     siteName: "Travel with Liana",
   },
@@ -44,9 +49,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Travel with Liana",
     description: "Real places. Meaningful moments. Timeless memories.",
-  },
-  alternates: {
-    canonical: "/",
   },
 };
 
@@ -63,7 +65,15 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${montserrat.variable} ${caveat.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <a href="#main" className="tl-skip">
+          Skip to main content
+        </a>
+        <SiteHeader />
+        <main id="main">{children}</main>
+        <SiteFooter />
+        <Interactivity />
+      </body>
     </html>
   );
 }

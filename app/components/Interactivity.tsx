@@ -3,32 +3,17 @@
 import { useEffect } from "react";
 
 /**
- * Single client island that wires up the page's two interactive behaviors:
- *  1. The fixed topbar grows a hairline border on scroll past 12px.
- *  2. The Reels grid plays each clip on hover (desktop) or focus (keyboard),
- *     pauses on leave/blur. Touch devices toggle on tap. Space/Enter on a
- *     focused reel toggles play. prefers-reduced-motion skips auto-play.
+ * Cross-page client island. Wires up:
+ *  1. Reels hover-to-play on [data-reel] elements (homepage only).
+ *  2. Scroll-triggered reveal animations on [data-reveal] elements
+ *     (any page can opt in). Honors prefers-reduced-motion.
  *
- * The DOM lives in the server component (page.tsx). This component only
- * attaches event listeners — keeping the static page server-rendered while
- * the JS for interactivity runs only on the client.
+ * The fixed-topbar scroll-shadow lives in SiteHeader.tsx — that component
+ * already needs to be a client component for the mobile menu state, so
+ * the scroll listener is colocated there for cohesion.
  */
 export default function Interactivity() {
   useEffect(() => {
-    // ---- Topbar scroll shadow ----
-    const topbar = document.getElementById("tl-topbar");
-    const onScroll = () => {
-      if (!topbar) return;
-      if (window.scrollY > 12) topbar.classList.add("scrolled");
-      else topbar.classList.remove("scrolled");
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-
-    // ---- Reels hover-to-play ----
-    const reels = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-reel]"),
-    );
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -39,6 +24,10 @@ export default function Interactivity() {
     type Cleanup = () => void;
     const cleanups: Cleanup[] = [];
 
+    // ---- Reels hover-to-play ----
+    const reels = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-reel]"),
+    );
     reels.forEach((reel) => {
       const video = reel.querySelector<HTMLVideoElement>(
         "[data-reel-video]",
@@ -50,7 +39,7 @@ export default function Interactivity() {
         try {
           video.currentTime = 0;
         } catch {
-          /* some browsers throw if metadata isn't ready yet */
+          /* metadata not yet ready */
         }
         const p = video.play();
         if (p && typeof p.then === "function") {
@@ -95,8 +84,35 @@ export default function Interactivity() {
       cleanups.push(() => reel.removeEventListener("keydown", onKey));
     });
 
+    // ---- Scroll-triggered reveal ----
+    const reveals = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-reveal]"),
+    );
+    if (reveals.length > 0) {
+      if (reduceMotion) {
+        // Show everything immediately when reduced-motion is requested.
+        reveals.forEach((el) => el.classList.add("is-revealed"));
+      } else if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-revealed");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+        );
+        reveals.forEach((el) => observer.observe(el));
+        cleanups.push(() => observer.disconnect());
+      } else {
+        // No IntersectionObserver — graceful fallback shows everything.
+        reveals.forEach((el) => el.classList.add("is-revealed"));
+      }
+    }
+
     return () => {
-      window.removeEventListener("scroll", onScroll);
       cleanups.forEach((c) => c());
     };
   }, []);
