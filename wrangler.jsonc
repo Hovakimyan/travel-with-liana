@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "travel-with-liana",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+
+  // ── Environment variables ────────────────────────────────────────────────
+  // No env vars are needed for the current site — it's fully static and
+  // doesn't talk to any third-party APIs. The newsletter form is a
+  // placeholder (action="#") and posts nowhere.
+  //
+  // When/if you later wire up:
+  //   • ConvertKit / Beehiiv / Substack newsletter API   → secret API key
+  //   • Resend or similar for a real inquiry form         → RESEND_API_KEY
+  //   • Plausible / Vercel Analytics / GA                 → site/domain ID
+  //   • A CMS for journal posts (Sanity, Contentlayer)    → API token
+  //
+  // Plaintext (non-secret) values can live in a "vars" block here once you
+  // need them. Secrets must NEVER go here — add them via the Cloudflare
+  // dashboard (Workers → travel-with-liana → Variables) or with
+  // `npx wrangler secret put NAME`.
+}
