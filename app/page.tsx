@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 // Destination categories shown on the homepage. Photos are Unsplash
 // hotlinks for the demo — swap to her own travel photography once
 // the real archive lands.
@@ -214,12 +216,12 @@ export default function Page() {
             curated with heart and shared with you. Hi, I&rsquo;m Liana.
           </p>
           <div className="tl-hero-ctas">
-            <a href="/destinations" className="tl-btn-primary">
+            <Link href="/destinations" className="tl-btn-primary">
               Explore guides &rarr;
-            </a>
-            <a href="/about" className="tl-btn-secondary">
+            </Link>
+            <Link href="/about" className="tl-btn-secondary">
               About Liana
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -239,7 +241,7 @@ export default function Page() {
         </div>
         <div className="tl-cards">
           {destinations.map((d) => (
-            <a key={d.eyebrow} href={d.href} className="tl-card">
+            <Link key={d.eyebrow} href={d.href} className="tl-card">
               <div className="tl-card-shot">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={d.img} alt={d.alt} loading="lazy" />
@@ -249,7 +251,7 @@ export default function Page() {
                 <h3 className="tl-card-title">{d.title}</h3>
                 <span className="tl-card-link">Read the guide &rarr;</span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </section>
@@ -366,9 +368,9 @@ export default function Page() {
                   </span>
                 </li>
               </ul>
-              <a href="/about" className="tl-btn-outline">
+              <Link href="/about" className="tl-btn-outline">
                 Read the full story
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -463,9 +465,9 @@ export default function Page() {
           fit means saying no more often than yes. If your story might fit,
           I&rsquo;d love to hear about it.
         </p>
-        <a href="/collabs" className="email">
+        <Link href="/collabs" className="email">
           See how we&rsquo;d work together &rarr;
-        </a>
+        </Link>
       </section>
 
       {/* JSON-LD structured data */}
